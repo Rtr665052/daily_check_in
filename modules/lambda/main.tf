@@ -1,4 +1,11 @@
+resource "null_resource" "artifacts_dir" {
+  provisioner "local-exec" {
+    command = "mkdir -p ${path.root}/.terraform-artifacts"
+  }
+}
+
 data "archive_file" "this" {
+  depends_on  = [null_resource.artifacts_dir]
   type        = "zip"
   source_dir  = var.source_dir
   output_path = "${path.root}/.terraform-artifacts/${var.function_name}.zip"
@@ -21,17 +28,4 @@ resource "aws_lambda_function_url" "this" {
   count              = var.create_function_url ? 1 : 0
   function_name      = aws_lambda_function.this.function_name
   authorization_type = "NONE"
-}
-
-resource "null_resource" "artifacts_dir" {
-  provisioner "local-exec" {
-    command = "mkdir -p ${path.root}/.terraform-artifacts"
-  }
-}
-
-data "archive_file" "this" {
-  depends_on  = [null_resource.artifacts_dir]
-  type        = "zip"
-  source_dir  = var.source_dir
-  output_path = "${path.root}/.terraform-artifacts/${var.function_name}.zip"
 }
