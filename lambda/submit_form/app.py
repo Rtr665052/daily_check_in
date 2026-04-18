@@ -63,6 +63,14 @@ def lambda_handler(event, context):
         person_id = token.get("person_id")
         token_date = token.get("date")
         submission_date = body.get("date")
+        sleep_hours = body.get("sleep_hours")
+        money_spent = body.get("money_spent")
+
+        if sleep_hours is None:
+            return build_response(400, {"message": "Missing sleep_hours"})
+
+        if money_spent is None:
+            return build_response(400, {"message": "Missing money_spent"})
 
         if not person_id:
             return build_response(400, {"message": "Missing person_id in token"})
@@ -82,7 +90,9 @@ def lambda_handler(event, context):
             "finances_notes": body.get("finances_notes", ""),
             "mental_score": body.get("mental_score"),
             "mental_notes": body.get("mental_notes", ""),
-            "submitted_at": datetime.now(timezone.utc).isoformat()
+            "submitted_at": datetime.now(timezone.utc).isoformat(),
+            "sleep_hours" : body.get("sleep_hours"),
+            "money_spent": body.get("money_spent"),
         }
 
         table.put_item(Item=item)
