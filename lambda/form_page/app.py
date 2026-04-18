@@ -103,6 +103,12 @@ def lambda_handler(event, context):
       <label for="nutrition_notes">Nutrition Notes</label>
       <textarea name="nutrition_notes" id="nutrition_notes" placeholder="Anything about meals, water, habits, etc."></textarea>
 
+      <label for="sleep_hours">How many hours of sleep did you get?</label>
+      <input type="number" id="sleep_hours" name="sleep_hours" step="0.1" min="0" max="24" required>
+
+      <label for="money_spent">How much money did you spend today?</label>
+      <input type="number" id="money_spent" name="money_spent" step="0.01" min="0" required>
+      
       <label for="finances_score">Finances (1-5)</label>
       <select name="finances_score" id="finances_score" required>
         <option value="">Select a score</option>
