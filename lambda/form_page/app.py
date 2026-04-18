@@ -1,4 +1,3 @@
-import json
 import os
 
 SUBMIT_URL = os.environ.get("SUBMIT_URL", "")
@@ -108,7 +107,7 @@ def lambda_handler(event, context):
 
       <label for="money_spent">How much money did you spend today?</label>
       <input type="number" id="money_spent" name="money_spent" step="0.01" min="0" required>
-      
+
       <label for="finances_score">Finances (1-5)</label>
       <select name="finances_score" id="finances_score" required>
         <option value="">Select a score</option>
@@ -148,8 +147,18 @@ def lambda_handler(event, context):
     form.addEventListener("submit", async (event) => {{
       event.preventDefault();
 
-      const formData = new FormData(form);
-      const payload = Object.fromEntries(formData.entries());
+      const payload = {{
+        token: form.elements["token"].value,
+        date: form.elements["date"].value,
+        nutrition_score: Number(form.elements["nutrition_score"].value),
+        nutrition_notes: form.elements["nutrition_notes"].value,
+        sleep_hours: Number(form.elements["sleep_hours"].value),
+        money_spent: Number(form.elements["money_spent"].value),
+        finances_score: Number(form.elements["finances_score"].value),
+        finances_notes: form.elements["finances_notes"].value,
+        mental_score: Number(form.elements["mental_score"].value),
+        mental_notes: form.elements["mental_notes"].value
+      }};
 
       resultDiv.innerHTML = "";
 
@@ -162,13 +171,20 @@ def lambda_handler(event, context):
           body: JSON.stringify(payload)
         }});
 
-        const data = await response.json();
+        const text = await response.text();
+        let data = {{}};
+
+        try {{
+          data = JSON.parse(text);
+        }} catch (e) {{
+          throw new Error(text || "Invalid server response");
+        }}
 
         if (response.ok) {{
           form.style.display = "none";
           resultDiv.innerHTML = `<div class="success">${{data.message || "Submitted successfully."}}</div>`;
         }} else {{
-          resultDiv.innerHTML = `<div class="error">${{data.message || "Submission failed."}}</div>`;
+          resultDiv.innerHTML = `<div class="error">${{data.message || data.error || "Submission failed."}}</div>`;
         }}
       }} catch (error) {{
         resultDiv.innerHTML = `<div class="error">Submission failed: ${{error.message}}</div>`;
