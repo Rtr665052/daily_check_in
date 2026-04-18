@@ -1,7 +1,7 @@
 import json
 import os
 
-SUBMIT_URL = os.environ["SUBMIT_URL"]
+SUBMIT_URL = os.environ.get("SUBMIT_URL", "")
 
 
 def lambda_handler(event, context):

@@ -1,11 +1,9 @@
 variable "aws_region" {
-  type    = string
-  default = "us-east-1"
+  type = string
 }
 
 variable "project_name" {
-  type    = string
-  default = "daily-checkin"
+  type = string
 }
 
 variable "sender_email" {
@@ -17,11 +15,24 @@ variable "recipient_email" {
 }
 
 variable "schedule_expression" {
-  type    = string
-  default = "cron(0 8 * * ? *)"
+  type = string
 }
 
 variable "timezone" {
-  type    = string
-  default = "America/New_York"
+  type = string
+}
+
+variable "cors_allow_origins" {
+  type    = list(string)
+  default = ["*"]
+}
+
+variable "cors_allow_methods" {
+  type    = list(string)
+  default = ["GET", "POST"]
+}
+
+variable "cors_allow_headers" {
+  type    = list(string)
+  default = ["content-type"]
 }

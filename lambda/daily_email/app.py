@@ -1,14 +1,18 @@
 import json
 import os
 import urllib.parse
+import logging
 from datetime import datetime
 import boto3
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 ses = boto3.client("ses")
 
 SENDER_EMAIL = os.environ["SENDER_EMAIL"]
 RECIPIENT_EMAIL = os.environ["RECIPIENT_EMAIL"]
-FORM_URL = os.environ["FORM_URL"]
+FORM_URL = os.environ.get("FORM_URL", "")
 
 
 def lambda_handler(event, context):
@@ -49,6 +53,8 @@ Love you.
     </html>
     """
 
+    logger.info("Sending email from %s to %s", SENDER_EMAIL, RECIPIENT_EMAIL)
+
     response = ses.send_email(
         Source=SENDER_EMAIL,
         Destination={"ToAddresses": [RECIPIENT_EMAIL]},
@@ -58,8 +64,14 @@ Love you.
                 "Text": {"Data": body_text},
                 "Html": {"Data": body_html}
             }
-        }
+        },
+        ConfigurationSetName="daily-checkin-config",
+        Tags=[
+        {"Name": "MessageTag", "Value": "daily-checkin"}
+        ]
     )
+
+    logger.info("SES MessageId: %s", response.get("MessageId"))
 
     return {
         "statusCode": 200,

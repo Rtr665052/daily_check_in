@@ -3,33 +3,64 @@ import os
 from datetime import datetime, timezone
 import boto3
 
+TABLE_NAME = os.environ.get("TABLE_NAME", "").strip()
+
 dynamodb = boto3.resource("dynamodb")
-TABLE_NAME = os.environ["TABLE_NAME"]
-table = dynamodb.Table(TABLE_NAME)
+table = dynamodb.Table(TABLE_NAME) if TABLE_NAME else None
 
 
 def build_response(status_code, body):
     return {
         "statusCode": status_code,
         "headers": {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Headers": "content-type",
+            "Access-Control-Allow-Methods": "POST, OPTIONS"
         },
         "body": json.dumps(body)
     }
 
 
 def lambda_handler(event, context):
+    method = (
+        event.get("requestContext", {})
+        .get("http", {})
+        .get("method", "")
+    )
+
+    if method == "OPTIONS":
+        return build_response(200, {"message": "OK"})
+
+    if not TABLE_NAME or table is None:
+        return build_response(500, {
+            "message": "Submission failed",
+            "error": "TABLE_NAME environment variable is missing"
+        })
+
     try:
         raw_body = event.get("body") or "{}"
+
+        # handle base64-encoded bodies just in case
+        if event.get("isBase64Encoded"):
+            import base64
+            raw_body = base64.b64decode(raw_body).decode("utf-8")
+
         body = json.loads(raw_body)
 
         token_raw = body.get("token")
         if not token_raw:
             return build_response(400, {"message": "Missing token"})
 
-        try:
-            token = json.loads(token_raw)
-        except json.JSONDecodeError:
+        # token may already be a dict, or it may be a JSON string
+        if isinstance(token_raw, str):
+            try:
+                token = json.loads(token_raw)
+            except json.JSONDecodeError:
+                return build_response(400, {"message": "Invalid token format"})
+        elif isinstance(token_raw, dict):
+            token = token_raw
+        else:
             return build_response(400, {"message": "Invalid token format"})
 
         person_id = token.get("person_id")

@@ -10,14 +10,17 @@ variable "role_arn" {
   type = string
 }
 
-variable "handler" {
-  type    = string
-  default = "app.lambda_handler"
+variable "runtime" {
+  type = string
 }
 
-variable "runtime" {
-  type    = string
-  default = "python3.12"
+variable "handler" {
+  type = string
+}
+
+variable "create_function_url" {
+  type    = bool
+  default = false
 }
 
 variable "environment_variables" {
@@ -25,7 +28,17 @@ variable "environment_variables" {
   default = {}
 }
 
-variable "create_function_url" {
-  type    = bool
-  default = false
+variable "cors_allow_origins" {
+  type    = list(string)
+  default = ["*"]
+}
+
+variable "cors_allow_methods" {
+  type    = list(string)
+  default = ["GET", "POST"]
+}
+
+variable "cors_allow_headers" {
+  type    = list(string)
+  default = ["content-type"]
 }

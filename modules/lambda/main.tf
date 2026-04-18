@@ -25,7 +25,14 @@ resource "aws_lambda_function" "this" {
 }
 
 resource "aws_lambda_function_url" "this" {
-  count              = var.create_function_url ? 1 : 0
+  count = var.create_function_url ? 1 : 0
+
   function_name      = aws_lambda_function.this.function_name
   authorization_type = "NONE"
+
+  cors {
+    allow_origins = var.cors_allow_origins
+    allow_methods = var.cors_allow_methods
+    allow_headers = var.cors_allow_headers
+  }
 }
